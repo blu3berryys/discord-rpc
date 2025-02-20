@@ -31,33 +31,31 @@ typedef struct DiscordButton {
 } DiscordButton;
 
 typedef enum DiscordActivityType {
-    DiscordActivityType_Playing = 0, // the default
-    // DiscordActivityType_Streaming = 1, // not allowed
+    DiscordActivityType_Playing = 0,
     DiscordActivityType_Listening = 2,
     DiscordActivityType_Watching = 3,
-    // DiscordActivityType_Custom = 4, // not allowed
     DiscordActivityType_Competing = 5
 } DiscordActivityType;
 
 typedef struct DiscordRichPresence {
     DiscordActivityType type;
-    const char* state;   /* max 128 bytes */
-    const char* details; /* max 128 bytes */
+    const char* state;
+    const char* details;
     int64_t startTimestamp;
     int64_t endTimestamp;
-    const char* largeImageKey;  /* max 32 bytes */
-    const char* largeImageText; /* max 128 bytes */
-    const char* smallImageKey;  /* max 32 bytes */
-    const char* smallImageText; /* max 128 bytes */
-    const char* partyId;        /* max 128 bytes */
+    const char* largeImageKey;
+    const char* largeImageText;
+    const char* smallImageKey;
+    const char* smallImageText;
+    const char* partyId;
     int partySize;
     int partyMax;
     int partyPrivacy;
-    const char* matchSecret;    /* max 128 bytes */
-    const char* joinSecret;     /* max 128 bytes */
-    const char* spectateSecret; /* max 128 bytes */
+    const char* matchSecret;
+    const char* joinSecret;
+    const char* spectateSecret;
     int8_t instance;
-    DiscordButton buttons[DISCORD_BUTTONS_SIZE]; /* max 2 elements */
+    DiscordButton buttons[DISCORD_BUTTONS_SIZE];
 } DiscordRichPresence;
 
 typedef struct DiscordUser {
@@ -88,22 +86,15 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                        const char* optionalSteamId);
 DISCORD_EXPORT bool Discord_Connected(void);
 DISCORD_EXPORT void Discord_Shutdown(void);
-
-/* checks for incoming messages, dispatches callbacks */
 DISCORD_EXPORT void Discord_RunCallbacks(void);
-
-/* If you disable the lib starting its own io thread, you'll need to call this from your own */
 #ifdef DISCORD_DISABLE_IO_THREAD
 DISCORD_EXPORT void Discord_UpdateConnection(void);
 #endif
-
 DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence* presence);
 DISCORD_EXPORT void Discord_ClearPresence(void);
-
-DISCORD_EXPORT void Discord_Respond(const char* userid, /* DISCORD_REPLY_ */ int reply);
-
+DISCORD_EXPORT void Discord_Respond(const char* userid, int reply);
 DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* handlers);
 
 #ifdef __cplusplus
-} /* extern "C" */
+} 
 #endif
