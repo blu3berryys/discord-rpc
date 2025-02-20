@@ -9,36 +9,25 @@
 #include <psapi.h>
 #include <cstdio>
 
-/**
- * Updated fixes for MinGW and WinXP
- * This block is written the way it does not involve changing the rest of the code
- * Checked to be compiling
- * 1) strsafe.h belongs to Windows SDK and cannot be added to MinGW
- * #include guarded, functions redirected to <string.h> substitutes
- * 2) RegSetKeyValueW and LSTATUS are not declared in <winreg.h>
- * The entire function is rewritten
- */
 #ifdef __MINGW32__
 #include <wchar.h>
-/// strsafe.h fixes
+
 static HRESULT StringCbPrintfW(LPWSTR pszDest, size_t cbDest, LPCWSTR pszFormat, ...)
 {
     HRESULT ret;
     va_list va;
     va_start(va, pszFormat);
-    cbDest /= 2; // Size is divided by 2 to convert from bytes to wide characters - causes segfault
-                 // othervise
+    cbDest /= 2;
     ret = vsnwprintf(pszDest, cbDest, pszFormat, va);
-    pszDest[cbDest - 1] = 0; // Terminate the string in case a buffer overflow; -1 will be returned
+    pszDest[cbDest - 1] = 0;
     va_end(va);
     return ret;
 }
 #else
 #include <cwchar>
 #include <strsafe.h>
-#endif // __MINGW32__
+#endif
 
-/// winreg.h fixes
 #ifndef LSTATUS
 #define LSTATUS LONG
 #endif
@@ -69,10 +58,6 @@ static LSTATUS regset(HKEY hkey,
 
 static void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* command)
 {
-    // https://msdn.microsoft.com/en-us/library/aa767914(v=vs.85).aspx
-    // we want to register games so we can run them as discord-<appid>://
-    // Update the HKEY_CURRENT_USER, because it doesn't seem to require special permissions.
-
     wchar_t exeFilePath[MAX_PATH];
     DWORD exeLen = GetModuleFileNameW(nullptr, exeFilePath, MAX_PATH);
     wchar_t openCommand[1024];
@@ -81,7 +66,6 @@ static void Discord_RegisterW(const wchar_t* applicationId, const wchar_t* comma
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", command);
     }
     else {
-        // StringCbCopyW(openCommand, sizeof(openCommand), exeFilePath);
         StringCbPrintfW(openCommand, sizeof(openCommand), L"%s", exeFilePath);
     }
 
