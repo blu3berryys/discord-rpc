@@ -144,14 +144,6 @@ static std::string resolve_path(std::string const& dir, struct dirent* entry)
     return file;
 }
 
-// Reads the next iterator entry and sees if it satisfies the predicate.
-// If there is no next entry, this function returns an empty string. If all
-// remaining files read by this iterator are not a matching file, the next
-// directory is popped from the queue, the iterator is set to that directory,
-// it is opened and the function proceeds with the search using this iterator.
-// This is done until either a matching file is found or the queue is empty.
-// Once an entry satisfies the predicate, the full file path is returned.
-// Otherwise an empty string is returned.
 static std::string directory_find_next_recursive(
   directory_iterator& directory,
   std::function<bool(std::string const& parent, const char* directory)> directory_predicate,
@@ -185,13 +177,13 @@ static std::string directory_find_next_recursive(
     return "";
 }
 
-/*static*/ BaseConnection* BaseConnection::Create()
+BaseConnection* BaseConnection::Create()
 {
     PipeAddr.sun_family = AF_UNIX;
     return &Connection;
 }
 
-/*static*/ void BaseConnection::Destroy(BaseConnection*& c)
+void BaseConnection::Destroy(BaseConnection*& c)
 {
     auto self = reinterpret_cast<BaseConnectionUnix*>(c);
     self->Close();
