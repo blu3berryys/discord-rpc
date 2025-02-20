@@ -33,17 +33,10 @@ struct QueuedMessage {
 };
 
 struct User {
-    // snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
-    // terminator = 21
     char userId[32];
-    // 32 unicode glyphs is max name size => 4 bytes per glyph in the worst case, +1 for null
-    // terminator = 129
     char username[344];
-    // 4 decimal digits + 1 null terminator = 5
     char discriminator[8];
-    // optional 'a_' + md5 hex digest (32 bytes) + null terminator = 35
     char avatar[128];
-    // Rounded way up because I'm paranoid about games breaking from future changes in these sizes
 };
 
 static RpcConnection* Connection{nullptr};
@@ -68,9 +61,7 @@ static MsgQueue<QueuedMessage, MessageQueueSize> SendQueue;
 static MsgQueue<User, JoinQueueSize> JoinAskQueue;
 static User connectedUser;
 
-// We want to auto connect, and retry on failure, but not as fast as possible. This does expoential
-// backoff from 0.5 seconds to 1 minute
-static Backoff ReconnectTimeMs(500, 10000 /*60 * 1000*/);
+static Backoff ReconnectTimeMs(500, 10000);
 static auto NextConnect = std::chrono::system_clock::now();
 static int Pid{0};
 static int Nonce{1};
@@ -119,7 +110,7 @@ public:
     void Stop() {}
     void Notify() {}
 };
-#endif // DISCORD_DISABLE_IO_THREAD
+#endif
 static IoThreadHolder* IoThread{nullptr};
 
 static void UpdateReconnectTime()
@@ -145,8 +136,6 @@ static void Discord_UpdateConnection(void)
         }
     }
     else {
-        // reads
-
         for (;;) {
             JsonDocument message;
 
@@ -158,8 +147,6 @@ static void Discord_UpdateConnection(void)
             const char* nonce = GetStrMember(&message, "nonce");
 
             if (nonce) {
-                // in responses only -- should use to match up response when needed.
-
                 if (evtName && strcmp(evtName, "ERROR") == 0) {
                     auto data = GetObjMember(&message, "data");
                     LastErrorCode = GetIntMember(data, "code");
@@ -168,7 +155,6 @@ static void Discord_UpdateConnection(void)
                 }
             }
             else {
-                // should have evt == name of event, optional data
                 if (evtName == nullptr) {
                     continue;
                 }
@@ -213,8 +199,6 @@ static void Discord_UpdateConnection(void)
                 }
             }
         }
-
-        // writes
         if (UpdatePresence.exchange(false) && QueuedPresence.length) {
             QueuedMessage local;
             {
@@ -222,7 +206,6 @@ static void Discord_UpdateConnection(void)
                 local.Copy(QueuedPresence);
             }
             if (!Connection->Write(local.buffer, local.length)) {
-                // if we fail to send, requeue
                 std::lock_guard<std::mutex> guard(PresenceMutex);
                 QueuedPresence.Copy(local);
                 UpdatePresence.exchange(true);
@@ -387,9 +370,8 @@ extern "C" DISCORD_EXPORT void Discord_ClearPresence(void)
     Discord_UpdatePresence(nullptr);
 }
 
-extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_REPLY_ */ int reply)
+extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, int reply)
 {
-    // if we are not connected, let's not batch up stale messages for later
     if (!Connection || !Connection->IsOpen()) {
         return;
     }
@@ -404,10 +386,6 @@ extern "C" DISCORD_EXPORT void Discord_Respond(const char* userId, /* DISCORD_RE
 
 extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
 {
-    // Note on some weirdness: internally we might connect, get other signals, disconnect any number
-    // of times inbetween calls here. Externally, we want the sequence to seem sane, so any other
-    // signals are book-ended by calls to ready and disconnect.
-
     if (!Connection) {
         return;
     }
@@ -416,7 +394,6 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     bool isConnected = Connection->IsOpen();
 
     if (isConnected) {
-        // if we are connected, disconnect cb first
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (wasDisconnected && Handlers.disconnected) {
             Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
@@ -455,11 +432,6 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
         }
     }
 
-    // Right now this batches up any requests and sends them all in a burst; I could imagine a world
-    // where the implementer would rather sequentially accept/reject each one before the next invite
-    // is sent. I left it this way because I could also imagine wanting to process these all and
-    // maybe show them in one common dialog and/or start fetching the avatars in parallel, and if
-    // not it should be trivial for the implementer to make a queue themselves.
     while (JoinAskQueue.HavePendingSends()) {
         auto req = JoinAskQueue.GetNextSendMessage();
         {
@@ -473,7 +445,6 @@ extern "C" DISCORD_EXPORT void Discord_RunCallbacks(void)
     }
 
     if (!isConnected) {
-        // if we are not connected, disconnect message last
         std::lock_guard<std::mutex> guard(HandlerMutex);
         if (wasDisconnected && Handlers.disconnected) {
             Handlers.disconnected(LastDisconnectErrorCode, LastDisconnectErrorMessage);
