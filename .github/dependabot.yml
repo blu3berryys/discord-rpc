@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "git-submodules"
+  - package-ecosystem: "github-submodules"
     directory: "/"
     schedule:
       interval: "daily"
