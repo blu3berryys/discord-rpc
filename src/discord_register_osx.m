@@ -7,11 +7,6 @@
 
 static void RegisterCommand(const char* applicationId, const char* command)
 {
-    // There does not appear to be a way to register arbitrary commands on OSX, so instead we'll save the command
-    // to a file in the Discord config path, and when it is needed, Discord can try to load the file there, open
-    // the command therein (will pass to js's window.open, so requires a url-like thing)
-
-    // Note: will not work for sandboxed apps
   	NSString *home = NSHomeDirectory();
     if (!home) {
         return;
