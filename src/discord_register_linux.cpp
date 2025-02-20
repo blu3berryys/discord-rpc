@@ -21,11 +21,8 @@ static bool Mkdir(const char* path)
     return false;
 }
 
-// we want to register games so we can run them from Discord client as discord-<appid>://
 extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const char* command)
 {
-    // Add a desktop file and update some mime handlers so that xdg-open does the right thing.
-
     const char* home = getenv("HOME");
     if (!home) {
         return;
@@ -43,7 +40,7 @@ extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const
 
     const char* desktopFileFormat = "[Desktop Entry]\n"
                                     "Name=Game %s\n"
-                                    "Exec=%s %%u\n" // note: it really wants that %u in there
+                                    "Exec=%s %%u\n"
                                     "Type=Application\n"
                                     "NoDisplay=true\n"
                                     "Categories=Discord;Games;\n"
