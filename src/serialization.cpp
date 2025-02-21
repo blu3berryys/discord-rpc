@@ -27,7 +27,6 @@ void NumberToString(char* dest, T number)
     *dest = 0;
 }
 
-// it's ever so slightly faster to not have to strlen the key
 template <typename T>
 void WriteKey(JsonWriter& w, T& k)
 {
