@@ -3,8 +3,6 @@
 #include "connection.h"
 #include "serialization.h"
 
-// I took this from the buffer size libuv uses for named pipes; I suspect ours would usually be much
-// smaller.
 constexpr size_t MaxRpcFrameSize = 64 * 1024;
 
 struct RpcConnection {
