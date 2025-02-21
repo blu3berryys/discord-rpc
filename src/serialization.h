@@ -53,10 +53,7 @@ class LinearAllocator {
 public:
     char* buffer_;
     char* end_;
-    LinearAllocator()
-    {
-        assert(0);
-    }
+    LinearAllocator() { assert(0); }
     LinearAllocator(char* buffer, size_t size)
       : buffer_(buffer)
       , end_(buffer + size)
@@ -83,10 +80,7 @@ public:
         (void)(originalSize);
         return Malloc(newSize);
     }
-    static void Free(void* ptr)
-    {
-        (void)ptr;
-    }
+    static void Free(void* ptr) { (void)ptr; }
 };
 
 template <size_t Size>

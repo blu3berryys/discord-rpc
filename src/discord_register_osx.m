@@ -7,20 +7,22 @@
 
 static void RegisterCommand(const char* applicationId, const char* command)
 {
-  	NSString *home = NSHomeDirectory();
+    NSString* home = NSHomeDirectory();
     if (!home) {
         return;
     }
 
-    NSString *path = [[[[[[home stringByAppendingPathComponent:@"Library"]
-                                stringByAppendingPathComponent:@"Application Support"]
-                                stringByAppendingPathComponent:@"discord"]
-                                stringByAppendingPathComponent:@"games"]
-                                stringByAppendingPathComponent:[NSString stringWithUTF8String:applicationId]]
-                                stringByAppendingPathExtension:@"json"];
-    [[NSFileManager defaultManager] createDirectoryAtPath:[path stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:nil];
+    NSString* path = [[[[[[home stringByAppendingPathComponent:@"Library"]
+      stringByAppendingPathComponent:@"Application Support"]
+      stringByAppendingPathComponent:@"discord"] stringByAppendingPathComponent:@"games"]
+      stringByAppendingPathComponent:[NSString stringWithUTF8String:applicationId]]
+      stringByAppendingPathExtension:@"json"];
+    [[NSFileManager defaultManager] createDirectoryAtPath:[path stringByDeletingLastPathComponent]
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:nil];
 
-    NSString *jsonBuffer = [NSString stringWithFormat:@"{\"command\": \"%s\"}", command];
+    NSString* jsonBuffer = [NSString stringWithFormat:@"{\"command\": \"%s\"}", command];
     [jsonBuffer writeToFile:path atomically:NO encoding:NSUTF8StringEncoding error:nil];
 }
 

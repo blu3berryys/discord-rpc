@@ -96,5 +96,5 @@ DISCORD_EXPORT void Discord_Respond(const char* userid, int reply);
 DISCORD_EXPORT void Discord_UpdateHandlers(DiscordEventHandlers* handlers);
 
 #ifdef __cplusplus
-} 
+}
 #endif
