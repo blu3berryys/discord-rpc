@@ -5,12 +5,12 @@
 #ifndef __MINGW32__
 #pragma warning(push)
 
-#pragma warning(disable : 4061) // enum is not explicitly handled by a case label
-#pragma warning(disable : 4365) // signed/unsigned mismatch
-#pragma warning(disable : 4464) // relative include path contains
-#pragma warning(disable : 4668) // is not defined as a preprocessor macro
-#pragma warning(disable : 6313) // Incorrect operator
-#endif                          // __MINGW32__
+#pragma warning(disable : 4061)
+#pragma warning(disable : 4365)
+#pragma warning(disable : 4464)
+#pragma warning(disable : 4668)
+#pragma warning(disable : 6313)
+#endif
 
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
@@ -18,9 +18,8 @@
 
 #ifndef __MINGW32__
 #pragma warning(pop)
-#endif // __MINGW32__
+#endif
 
-// if only there was a standard library function for this
 template <size_t Len>
 inline size_t StringCopy(char (&dest)[Len], const char* src)
 {
@@ -38,7 +37,6 @@ inline size_t StringCopy(char (&dest)[Len], const char* src)
 
 size_t JsonWriteHandshakeObj(char* dest, size_t maxLen, int version, const char* applicationId);
 
-// Commands
 struct DiscordRichPresence;
 size_t JsonWriteRichPresenceObj(char* dest,
                                 size_t maxLen,
@@ -51,16 +49,13 @@ size_t JsonWriteUnsubscribeCommand(char* dest, size_t maxLen, int nonce, const c
 
 size_t JsonWriteJoinReply(char* dest, size_t maxLen, const char* userId, int reply, int nonce);
 
-// I want to use as few allocations as I can get away with, and to do that with RapidJson, you need
-// to supply some of your own allocators for stuff rather than use the defaults
-
 class LinearAllocator {
 public:
     char* buffer_;
     char* end_;
     LinearAllocator()
     {
-        assert(0); // needed for some default case in rapidjson, should not use
+        assert(0);
     }
     LinearAllocator(char* buffer, size_t size)
       : buffer_(buffer)
@@ -83,16 +78,13 @@ public:
         if (newSize == 0) {
             return nullptr;
         }
-        // allocate how much you need in the first place
         assert(!originalPtr && !originalSize);
-        // unused parameter warning
         (void)(originalPtr);
         (void)(originalSize);
         return Malloc(newSize);
     }
     static void Free(void* ptr)
     {
-        /* shrug */
         (void)ptr;
     }
 };
@@ -108,7 +100,6 @@ public:
     static const bool kNeedFree = false;
 };
 
-// wonder why this isn't a thing already, maybe I missed it
 class DirectStringBuffer {
 public:
     using Ch = char;
@@ -136,7 +127,6 @@ public:
 using MallocAllocator = rapidjson::CrtAllocator;
 using PoolAllocator = rapidjson::MemoryPoolAllocator<MallocAllocator>;
 using UTF8 = rapidjson::UTF8<char>;
-// Writer appears to need about 16 bytes per nested object level (with 64bit size_t)
 using StackAllocator = FixedLinearAllocator<2048>;
 constexpr size_t WriterNestingLevels = 2048 / (2 * sizeof(size_t));
 using JsonWriterBase =
@@ -160,8 +150,6 @@ using JsonDocumentBase = rapidjson::GenericDocument<UTF8, PoolAllocator, StackAl
 class JsonDocument : public JsonDocumentBase {
 public:
     static const int kDefaultChunkCapacity = 32 * 1024;
-    // json parser will use this buffer first, then allocate more if needed; I seriously doubt we
-    // send any messages that would use all of this, though.
     char parseBuffer_[32 * 1024];
     MallocAllocator mallocAllocator_;
     PoolAllocator poolAllocator_;
