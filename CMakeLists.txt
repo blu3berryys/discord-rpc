@@ -5,7 +5,8 @@ include(GNUInstallDirs)
 
 file(GLOB_RECURSE ALL_SOURCE_FILES
     include/*.h
-    src/*.cpp src/*.h src/*.c
+    src/*.cpp
+    src/*.h
 )
 
 find_program(CLANG_FORMAT_CMD clang-format${CLANG_FORMAT_SUFFIX})
