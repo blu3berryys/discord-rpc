@@ -66,7 +66,6 @@ void Discord_Register(const char* applicationId, const char* command)
         RegisterCommand(applicationId, command);
     }
     else {
-        // raii lite
         @autoreleasepool {
             RegisterURL(applicationId);
         }
